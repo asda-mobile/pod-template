@@ -1,0 +1,14 @@
+use_frameworks!
+
+platform :ios, '11.0'
+
+project '${POD_NAME}.xcodeproj'
+
+target '${POD_NAME}' do
+
+  target '${POD_NAME}_Tests' do
+    inherit! :search_paths
+
+    ${INCLUDED_PODS}
+  end
+end

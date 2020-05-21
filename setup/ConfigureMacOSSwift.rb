@@ -35,9 +35,9 @@ module Pod
 
       `mv ./templates/macos-swift/* ./`
 
-      # There has to be a single file in the Classes dir
+      # There has to be a single file in the Source dir
       # or a framework won't be created
-      `touch Pod/Classes/ReplaceMe.swift`
+      `touch Pod/Source/ReplaceMe.swift`
 
       `mv ./NAME-osx.podspec ./NAME.podspec`
     end

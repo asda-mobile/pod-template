@@ -12,51 +12,37 @@ module Pod
     end
 
     def perform
-      keep_demo = configurator.ask_with_answers("Would you like to include a demo application with your library", ["Yes", "No"]).to_sym
+      keep_demo = configurator.ask_with_answers("Would you like to include a demo application with your library", ["No", "Yes"]).to_sym
 
-      framework = configurator.ask_with_answers("Which testing frameworks will you use", ["Quick", "None"]).to_sym
-      case framework
-        when :quick
-          configurator.add_pod_to_podfile "Quick', '~> 1.2.0"
-          configurator.add_pod_to_podfile "Nimble', '~> 7.0"
-          configurator.set_test_framework "quick", "swift", "swift"
+      # Set XCTest framework
+      configurator.set_test_framework "xctest", "swift", "swift"
 
-        when :none
-          configurator.set_test_framework "xctest", "swift", "swift"
-      end
-
-      snapshots = configurator.ask_with_answers("Would you like to do view based testing", ["Yes", "No"]).to_sym
-      case snapshots
+      ui_tests = configurator.ask_with_answers("Would you like to do view based testing", ["No", "Yes"]).to_sym
+      case ui_tests
         when :yes
-          configurator.add_pod_to_podfile "FBSnapshotTestCase' , '~> 2.1.4"
-
           if keep_demo == :no
               puts " Putting demo application back in, you cannot do view tests without a host application."
               keep_demo = :yes
           end
-
-          if framework == :quick
-              configurator.add_pod_to_podfile "Nimble-Snapshots' , '~> 6.3.0"
-          end
       end
+
+      create_git = configurator.ask_with_answers("Would you like to create a new git repo?", ["No", "Yes"]).to_sym
 
       Pod::ProjectManipulator.new({
         :configurator => @configurator,
-        :xcodeproj_path => "templates/swift/Example/PROJECT.xcodeproj",
+        :xcodeproj_path => "templates/swift/PROJECT.xcodeproj",
+        :demo_xcodeproj_path => "templates/swift/Example/PROJECT-Example.xcodeproj",
         :platform => :ios,
         :remove_demo_project => (keep_demo == :no),
-        :prefix => ""
+        :prefix => "",
+        :create_git => (create_git == :yes)
       }).run
 
       `mv ./templates/swift/* ./`
 
-      # There has to be a single file in the Classes dir
-      # or a framework won't be created
-      `touch Pod/Classes/ReplaceMe.swift`
-
-      # The Podspec should be 8.0 instead of 7.0
+      # The Podspec should be 11.0 instead of 7.0
       text = File.read("NAME.podspec")
-      text.gsub!("7.0", "8.0")
+      text.gsub!("7.0", "11.0")
       File.open("NAME.podspec", "w") { |file| file.puts text }
 
       # remove podspec for osx
